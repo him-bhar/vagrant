@@ -1,0 +1,31 @@
+There is a tomcat_custom directory which contains:
+1. server.xml [Only change there is Connector for https is uncommented and keystore related details are added]
+2. keystorefile [It's a simple keystore that is used to enabling ssl in tomcat, following command was used in docker itself to generate the same].
+$JAVA_HOME/bin/keytool -genkey -keystore `pwd`/keystorefile -alias ALIAS -keyalg RSA -keysize 4096 -validity 720
+3. Dockerfile [This is the file being used to create a docker image based on tomcat:8.0  and using the updated server.xml and keystorefile]
+
+How to build from inside vagrant (docker is already installed in vagrant env):
+Goto the directory tomcat_custom and run the following command (wrapped in script build_docker_image.sh):
+
+docker build -t himbhar/tomcat_ssl:8.0 .
+
+To run the docker image: (wrapped in run_docker_image.sh)
+docker run -it -p 8889:8443 -p 8888:8080 himbhar/tomcat_ssl:8.0
+(8443 = https)
+(8080 = http) change as per the need.
+
+Once the image has started, it can be accessed from inside vagrant VM as, https://localhost:8889 (for https) or http://localhost:8888 (for http)
+
+Push image to dockerhub:
+How to log into docker?
+Log into the Docker Hub from the command line
+
+docker login --username=yourhubusername
+just with your own user name that you used for the account. Enter your password when prompted. If everything worked you will get a message similar to
+
+WARNING: login credentials saved in /home/username/.docker/config.json
+Login Succeeded
+
+Copy files from vagrant vm to actual local machine (scp from powershell via ssh port (usually 2222, check using vagrant port command)):
+PS C:\himanshu_work\sources\github\vagrant\sample> scp -r -P 2222 vagrant@127.0.0.1:/home/vagrant/tomcat_custom .
+vagrant@127.0.0.1's password: vagrant
